@@ -14,11 +14,10 @@ const UserList = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
-  const [deleteModal, setDeleteModal] = useState({ isOpen: false, userId: null, userName: '' });
+  const [actionModal, setActionModal] = useState({ isOpen: false, userId: null, userName: '', action: '' });
   const navigate = useNavigate();
   const searchInputRef = useRef(null);
 
-  // Debounce search term
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm);
@@ -39,7 +38,7 @@ const UserList = () => {
       if (filterStatus) params.status = filterStatus;
       
       const response = await userService.getUsers(params);
-      setUsers(response.data);
+      setUsers(Array.isArray(response) ? response : (response.data || []));
     } catch (error) {
       console.error('Error fetching users:', error);
     } finally {
@@ -48,22 +47,26 @@ const UserList = () => {
     }
   };
 
-  const handleDelete = async () => {
+  const handleAction = async () => {
     try {
-      await userService.deleteUser(deleteModal.userId);
-      setDeleteModal({ isOpen: false, userId: null, userName: '' });
+      if (actionModal.action === 'deactivate') {
+        await userService.deactivateUser(actionModal.userId);
+      } else if (actionModal.action === 'reactivate') {
+        await userService.reactivateUser(actionModal.userId);
+      }
+      setActionModal({ isOpen: false, userId: null, userName: '', action: '' });
       fetchUsers();
     } catch (error) {
-      console.error('Error deleting user:', error);
+      console.error(`Error ${actionModal.action}ing user:`, error);
     }
   };
 
-  const openDeleteModal = (user) => {
-    setDeleteModal({ isOpen: true, userId: user.id, userName: user.name });
+  const openActionModal = (user, action) => {
+    setActionModal({ isOpen: true, userId: user.id, userName: user.name, action });
   };
 
-  const closeDeleteModal = () => {
-    setDeleteModal({ isOpen: false, userId: null, userName: '' });
+  const closeActionModal = () => {
+    setActionModal({ isOpen: false, userId: null, userName: '', action: '' });
   };
 
   if (initialLoading) {
@@ -157,13 +160,23 @@ const UserList = () => {
                         >
                           Edit
                         </Button>
-                        <Button
-                          size="small"
-                          variant="danger"
-                          onClick={() => openDeleteModal(user)}
-                        >
-                          Delete
-                        </Button>
+                        {user.status === 'active' ? (
+                          <Button
+                            size="small"
+                            variant="danger"
+                            onClick={() => openActionModal(user, 'deactivate')}
+                          >
+                            Deactivate
+                          </Button>
+                        ) : (
+                          <Button
+                            size="small"
+                            variant="success"
+                            onClick={() => openActionModal(user, 'reactivate')}
+                          >
+                            Reactivate
+                          </Button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -175,22 +188,31 @@ const UserList = () => {
       </Card>
 
       <Modal
-        isOpen={deleteModal.isOpen}
-        onClose={closeDeleteModal}
-        title="Confirm Delete"
+        isOpen={actionModal.isOpen}
+        onClose={closeActionModal}
+        title={`Confirm ${actionModal.action === 'deactivate' ? 'Deactivation' : 'Reactivation'}`}
         footer={
           <>
-            <Button variant="secondary" onClick={closeDeleteModal}>
+            <Button variant="secondary" onClick={closeActionModal}>
               Cancel
             </Button>
-            <Button variant="danger" onClick={handleDelete}>
-              Delete
+            <Button 
+              variant={actionModal.action === 'deactivate' ? 'danger' : 'success'} 
+              onClick={handleAction}
+            >
+              {actionModal.action === 'deactivate' ? 'Deactivate' : 'Reactivate'}
             </Button>
           </>
         }
       >
-        <p>Are you sure you want to delete user <strong>{deleteModal.userName}</strong>?</p>
-        <p>This action cannot be undone.</p>
+        <p>
+          Are you sure you want to {actionModal.action} user <strong>{actionModal.userName}</strong>?
+        </p>
+        <p>
+          {actionModal.action === 'deactivate' 
+            ? 'The user will no longer be able to access the system.' 
+            : 'The user will regain access to the system.'}
+        </p>
       </Modal>
     </div>
   );

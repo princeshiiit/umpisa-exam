@@ -1,7 +1,3 @@
-/**
- * Validation utilities
- */
-
 export const validateEmail = (email) => {
   const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return re.test(String(email).toLowerCase());
@@ -15,9 +11,6 @@ export const validateRequired = (value) => {
   return !!(value && value.trim().length > 0);
 };
 
-/**
- * Login form validation
- */
 export const validateLoginForm = (values) => {
   const errors = {};
 
@@ -36,9 +29,6 @@ export const validateLoginForm = (values) => {
   return errors;
 };
 
-/**
- * User form validation
- */
 export const validateUserForm = (values, isEditing = false) => {
   const errors = {};
 

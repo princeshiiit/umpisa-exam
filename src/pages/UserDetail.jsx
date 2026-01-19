@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import userService from '../services/userService';
+import { useAuth } from '../context/AuthContext';
 import Card from '../components/Card';
 import Button from '../components/Button';
 import Loader from '../components/Loader';
@@ -11,6 +12,7 @@ const UserDetail = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { isAdmin } = useAuth();
 
   useEffect(() => {
     fetchUser();
@@ -45,9 +47,11 @@ const UserDetail = () => {
           <Button variant="secondary" onClick={() => navigate('/users')}>
             Back to List
           </Button>
-          <Button variant="primary" onClick={() => navigate(`/users/${id}/edit`)}>
-            Edit User
-          </Button>
+          {isAdmin && (
+            <Button variant="primary" onClick={() => navigate(`/users/${id}/edit`)}>
+              Edit User
+            </Button>
+          )}
         </div>
       </div>
 

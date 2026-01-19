@@ -3,6 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import userService from '../services/userService';
 import { useForm } from '../hooks/useForm';
 import { validateUserForm } from '../utils/validation';
+import { getRoleId } from '../utils/constants';
+import { useToast } from '../context/ToastContext';
 import Card from '../components/Card';
 import Input from '../components/Input';
 import Button from '../components/Button';
@@ -16,8 +18,9 @@ const UserForm = () => {
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(isEditing);
   const [error, setError] = useState('');
+  const toast = useToast();
 
-  const { values, errors, touched, handleChange, handleBlur, setFieldValue } = useForm(
+  const { values, errors, touched, handleChange, handleBlur, setFieldValue, resetForm } = useForm(
     {
       name: '',
       email: '',
@@ -59,7 +62,7 @@ const UserForm = () => {
       const userData = {
         name: values.name,
         email: values.email,
-        role: values.role,
+        roleId: getRoleId(values.role),
         status: values.status
       };
 
@@ -69,13 +72,18 @@ const UserForm = () => {
 
       if (isEditing) {
         await userService.updateUser(id, userData);
+        toast.success('User updated successfully');
       } else {
         await userService.createUser(userData);
+        toast.success('User created successfully');
+        resetForm();
       }
 
       navigate('/users');
     } catch (err) {
-      setError(err.message || 'Failed to save user');
+      const errorMessage = err.message || 'Failed to save user';
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }

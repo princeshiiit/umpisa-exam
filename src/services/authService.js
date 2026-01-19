@@ -1,59 +1,44 @@
 import api from './api';
 
-// PLACEHOLDER: These will be replaced with actual API calls to AdonisJS backend
 const authService = {
-  // Login user
   login: async (email, password) => {
     try {
-      // PLACEHOLDER: Replace with actual API call
-      // const response = await api.post('/auth/login', { email, password });
+      const response = await api.post('/login', { email, password });
+      const { user, token } = response.data.data;
+      const transformedUser = {
+        id: user.id,
+        name: user.fullName,
+        email: user.email,
+        role: user.role?.name || 'user',
+        roleId: user.roleId,
+        isActive: user.isActive
+      };
       
-      // Mock response for now
-      await new Promise(resolve => setTimeout(resolve, 500)); // Simulate API delay
-      
-      if (email === 'admin@example.com' && password === 'password') {
-        const mockResponse = {
-          data: {
-            token: 'mock-jwt-token-' + Date.now(),
-            user: {
-              id: 1,
-              name: 'Admin User',
-              email: 'admin@example.com',
-              role: 'admin'
-            }
-          }
-        };
-        return mockResponse.data;
-      } else {
-        throw new Error('Invalid credentials');
-      }
+      return {
+        token: token.value,
+        user: transformedUser
+      };
     } catch (error) {
+      if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      }
       throw error;
     }
   },
 
-  // Logout user
   logout: async () => {
     try {
-      // PLACEHOLDER: Replace with actual API call
-      // await api.post('/auth/logout');
       localStorage.removeItem('token');
       localStorage.removeItem('user');
     } catch (error) {
-      // Even if API fails, clear local storage
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       throw error;
     }
   },
 
-  // Get current user
   getCurrentUser: async () => {
     try {
-      // PLACEHOLDER: Replace with actual API call
-      // const response = await api.get('/auth/me');
-      
-      // Mock response for now
       const storedUser = localStorage.getItem('user');
       if (storedUser) {
         return JSON.parse(storedUser);

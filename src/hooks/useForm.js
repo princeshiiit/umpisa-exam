@@ -1,11 +1,5 @@
 import { useState, useEffect } from 'react';
 
-/**
- * Custom hook for form validation
- * @param {Object} initialValues - Initial form values
- * @param {Function} validate - Validation function that returns errors object
- * @returns {Object} Form state and handlers
- */
 export const useForm = (initialValues, validate) => {
   const [values, setValues] = useState(initialValues);
   const [errors, setErrors] = useState({});

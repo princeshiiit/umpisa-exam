@@ -5,7 +5,7 @@ import Button from '../components/Button';
 import './Dashboard.css';
 
 const Dashboard = () => {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
 
   return (
     <div className="dashboard">
@@ -33,16 +33,18 @@ const Dashboard = () => {
         </Card>
       </div>
 
-      <Card title="Quick Actions" className="quick-actions-card">
-        <div className="quick-actions">
-          <Link to="/users/new">
-            <Button variant="success">Create New User</Button>
-          </Link>
-          <Link to="/users">
-            <Button variant="outline">View All Users</Button>
-          </Link>
-        </div>
-      </Card>
+      {isAdmin && (
+        <Card title="Quick Actions" className="quick-actions-card">
+          <div className="quick-actions">
+            <Link to="/users/new">
+              <Button variant="success">Create New User</Button>
+            </Link>
+            <Link to="/users">
+              <Button variant="outline">View All Users</Button>
+            </Link>
+          </div>
+        </Card>
+      )}
     </div>
   );
 };

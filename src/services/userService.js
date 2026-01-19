@@ -1,128 +1,200 @@
 import api from './api';
 
-// Mock data for demonstration
-let mockUsers = [
-  { id: 1, name: 'Admin User', email: 'admin@example.com', role: 'admin', status: 'active', createdAt: '2024-01-15' },
-  { id: 2, name: 'John Doe', email: 'john@example.com', role: 'user', status: 'active', createdAt: '2024-02-20' },
-  { id: 3, name: 'Jane Smith', email: 'jane@example.com', role: 'user', status: 'active', createdAt: '2024-03-10' },
-  { id: 4, name: 'Bob Johnson', email: 'bob@example.com', role: 'user', status: 'inactive', createdAt: '2024-04-05' },
-];
-
-// PLACEHOLDER: These will be replaced with actual API calls to AdonisJS backend
 const userService = {
-  // Get all users
   getUsers: async (params = {}) => {
     try {
-      // PLACEHOLDER: Replace with actual API call
-      // const response = await api.get('/users', { params });
+      const queryParams = {};
       
-      // Mock response for now
-      await new Promise(resolve => setTimeout(resolve, 300)); // Simulate API delay
+      if (params.page) queryParams.page = params.page;
+      if (params.limit || params.perPage) queryParams.limit = params.limit || params.perPage || 10;
+      if (params.search) queryParams.search = params.search;
       
-      let filteredUsers = [...mockUsers];
+      const response = await api.get('/users/retrieve', { params: queryParams });
       
-      // Apply filters if any
-      if (params.search) {
-        const search = params.search.toLowerCase();
-        filteredUsers = filteredUsers.filter(user => 
-          user.name.toLowerCase().includes(search) ||
-          user.email.toLowerCase().includes(search)
-        );
-      }
-      
-      if (params.status) {
-        filteredUsers = filteredUsers.filter(user => user.status === params.status);
-      }
+      const users = response.data.data.map(user => ({
+        id: user.id,
+        name: user.fullName || 'N/A',
+        email: user.email,
+        role: user.role?.name || (user.roleId === 1 ? 'admin' : 'user'),
+        roleId: user.roleId,
+        status: user.isActive ? 'active' : 'inactive',
+        createdAt: new Date(user.createdAt).toISOString().split('T')[0]
+      }));
       
       return {
-        data: filteredUsers,
-        meta: {
-          total: filteredUsers.length,
+        data: users,
+        meta: response.data.meta || {
+          total: users.length,
           page: params.page || 1,
           perPage: params.perPage || 10
         }
       };
     } catch (error) {
+      if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      }
       throw error;
     }
   },
 
-  // Get user by ID
   getUserById: async (id) => {
     try {
-      // PLACEHOLDER: Replace with actual API call
-      // const response = await api.get(`/users/${id}`);
-      
-      await new Promise(resolve => setTimeout(resolve, 200));
-      const user = mockUsers.find(u => u.id === parseInt(id));
+      const response = await api.get('/users/retrieve');
+      const user = response.data.data.find(u => u.id === parseInt(id));
       
       if (!user) {
         throw new Error('User not found');
       }
       
-      return user;
+      return {
+        id: user.id,
+        name: user.fullName || 'N/A',
+        email: user.email,
+        role: user.role?.name || (user.roleId === 1 ? 'admin' : 'user'),
+        roleId: user.roleId,
+        status: user.isActive ? 'active' : 'inactive',
+        createdAt: new Date(user.createdAt).toISOString().split('T')[0]
+      };
     } catch (error) {
+      if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      }
       throw error;
     }
   },
 
-  // Create new user
   createUser: async (userData) => {
     try {
-      // PLACEHOLDER: Replace with actual API call
-      // const response = await api.post('/users', userData);
-      
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      const newUser = {
-        id: mockUsers.length + 1,
-        ...userData,
-        createdAt: new Date().toISOString().split('T')[0]
+      const payload = {
+        email: userData.email,
+        password: userData.password,
+        fullName: userData.name || userData.fullName,
+        roleId: userData.roleId || 2 // Default to user role (2)
       };
       
-      mockUsers.push(newUser);
-      return newUser;
+      const response = await api.post('/users', payload);
+      const user = response.data.data;
+      
+      return {
+        id: user.id,
+        name: user.fullName || 'N/A',
+        email: user.email,
+        role: user.role?.name || (user.roleId === 1 ? 'admin' : 'user'),
+        roleId: user.roleId,
+        status: user.isActive ? 'active' : 'inactive',
+        createdAt: new Date(user.createdAt).toISOString().split('T')[0]
+      };
     } catch (error) {
+      if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      }
+      if (error.response?.data?.errors) {
+        const validationError = error.response.data.errors[0];
+        throw new Error(validationError.message);
+      }
       throw error;
     }
   },
 
-  // Update user
   updateUser: async (id, userData) => {
     try {
-      // PLACEHOLDER: Replace with actual API call
-      // const response = await api.put(`/users/${id}`, userData);
+      const payload = {};
       
-      await new Promise(resolve => setTimeout(resolve, 300));
+      if (userData.email) payload.email = userData.email;
+      if (userData.password) payload.password = userData.password;
+      if (userData.name || userData.fullName) payload.fullName = userData.name || userData.fullName;
+      if (userData.roleId !== undefined) payload.roleId = userData.roleId;
       
-      const index = mockUsers.findIndex(u => u.id === parseInt(id));
-      if (index === -1) {
-        throw new Error('User not found');
-      }
+      const response = await api.patch(`/users/${id}`, payload);
+      const user = response.data.data;
       
-      mockUsers[index] = { ...mockUsers[index], ...userData };
-      return mockUsers[index];
+      return {
+        id: user.id,
+        name: user.fullName || 'N/A',
+        email: user.email,
+        role: user.role?.name || (user.roleId === 1 ? 'admin' : 'user'),
+        roleId: user.roleId,
+        status: user.isActive ? 'active' : 'inactive',
+        createdAt: new Date(user.createdAt).toISOString().split('T')[0]
+      };
     } catch (error) {
+      if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      }
+      if (error.response?.data?.errors) {
+        const validationError = error.response.data.errors[0];
+        throw new Error(validationError.message);
+      }
       throw error;
     }
   },
 
-  // Delete user
   deleteUser: async (id) => {
     try {
-      // PLACEHOLDER: Replace with actual API call
-      // await api.delete(`/users/${id}`);
-      
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      const index = mockUsers.findIndex(u => u.id === parseInt(id));
-      if (index === -1) {
-        throw new Error('User not found');
-      }
-      
-      mockUsers.splice(index, 1);
-      return { success: true };
+      const response = await api.delete(`/users/${id}/deactivate`);
+      return { 
+        success: true,
+        message: response.data.message 
+      };
     } catch (error) {
+      if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      }
+      throw error;
+    }
+  },
+
+  deactivateUser: async (id) => {
+    try {
+      const response = await api.delete(`/users/${id}/deactivate`);
+      return { 
+        success: true,
+        message: response.data.message 
+      };
+    } catch (error) {
+      if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      }
+      throw error;
+    }
+  },
+
+  reactivateUser: async (id) => {
+    try {
+      const response = await api.patch(`/users/${id}/reactivate`);
+      const user = response.data.data;
+      
+      return {
+        id: user.id,
+        name: user.fullName || 'N/A',
+        email: user.email,
+        role: user.role?.name || (user.roleId === 1 ? 'admin' : 'user'),
+        roleId: user.roleId,
+        status: user.isActive ? 'active' : 'inactive',
+        createdAt: new Date(user.createdAt).toISOString().split('T')[0]
+      };
+    } catch (error) {
+      if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      }
+      throw error;
+    }
+  },
+
+  regeneratePassword: async (id) => {
+    try {
+      const response = await api.post(`/users/${id}/regenerate-password`);
+      return {
+        success: true,
+        message: response.data.message,
+        newPassword: response.data.data.newPassword,
+        email: response.data.data.email,
+        fullName: response.data.data.fullName
+      };
+    } catch (error) {
+      if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      }
       throw error;
     }
   }

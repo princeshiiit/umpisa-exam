@@ -1,9 +1,7 @@
 import axios from 'axios';
 
-// API base URL - will be replaced with AdonisJS backend later
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3333/api';
 
-// Create axios instance with default config
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
@@ -11,7 +9,7 @@ const api = axios.create({
   },
 });
 
-// Request interceptor to add auth token
+// Add auth token to requests
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -25,9 +23,10 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor to handle errors
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    return response;
+  },
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('token');

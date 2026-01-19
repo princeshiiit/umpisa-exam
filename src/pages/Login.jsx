@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import { useForm } from '../hooks/useForm';
 import { validateLoginForm } from '../utils/validation';
 import Card from '../components/Card';
@@ -13,6 +14,7 @@ const Login = () => {
   const [error, setError] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
+  const toast = useToast();
 
   const { values, errors, touched, handleChange, handleBlur } = useForm(
     { email: '', password: '' },
@@ -26,9 +28,12 @@ const Login = () => {
 
     try {
       await login(values.email, values.password);
+      toast.success('Login successful! Welcome back.');
       navigate('/users');
     } catch (err) {
-      setError(err.message || 'Invalid email or password');
+      const errorMessage = err.message || 'Invalid email or password';
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -88,8 +93,8 @@ const Login = () => {
         <div className="login-footer">
           <p className="demo-credentials">
             <strong>Demo credentials:</strong><br />
-            Email: admin@example.com<br />
-            Password: password
+            Email: admin@umpisa.com<br />
+            Password: Test@123
           </p>
         </div>
       </Card>

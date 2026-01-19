@@ -2,9 +2,9 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from '../context/AuthContext';
+import { ToastProvider } from '../context/ToastContext';
 import Login from '../pages/Login';
 
-// Mock the useNavigate hook
 const mockNavigate = vi.fn();
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual('react-router-dom');
@@ -19,7 +19,9 @@ describe('Login Component', () => {
     return render(
       <BrowserRouter>
         <AuthProvider>
-          <Login />
+          <ToastProvider>
+            <Login />
+          </ToastProvider>
         </AuthProvider>
       </BrowserRouter>
     );
@@ -29,7 +31,7 @@ describe('Login Component', () => {
     renderLogin();
     expect(screen.getByText('User Management System')).toBeInTheDocument();
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/enter your password/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument();
   });
 
@@ -37,9 +39,8 @@ describe('Login Component', () => {
     renderLogin();
     
     const emailInput = screen.getByLabelText(/email/i);
-    const passwordInput = screen.getByLabelText(/password/i);
+    const passwordInput = screen.getByPlaceholderText(/enter your password/i);
     
-    // Trigger validation by touching fields
     fireEvent.blur(emailInput);
     fireEvent.blur(passwordInput);
     
@@ -64,6 +65,6 @@ describe('Login Component', () => {
   it('displays demo credentials', () => {
     renderLogin();
     expect(screen.getByText(/demo credentials/i)).toBeInTheDocument();
-    expect(screen.getByText(/admin@example.com/i)).toBeInTheDocument();
+    expect(screen.getByText(/admin@umpisa.com/i)).toBeInTheDocument();
   });
 });

@@ -101,6 +101,54 @@
   gap: 0.5rem;
 }
 
+.password-modal-content {
+  padding: 0.5rem 0;
+}
+
+.password-warning {
+  background-color: #fff3cd;
+  border: 1px solid #ffc107;
+  border-radius: 4px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  color: #856404;
+}
+
+.password-details {
+  margin-bottom: 1.5rem;
+}
+
+.password-details p {
+  margin: 0.5rem 0;
+  color: #495057;
+}
+
+.password-display {
+  background-color: #f8f9fa;
+  border: 2px solid #007bff;
+  border-radius: 4px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.password-value {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #007bff;
+  letter-spacing: 1px;
+  word-break: break-all;
+  display: block;
+  padding: 0.5rem;
+}
+
+.password-instruction {
+  font-size: 0.875rem;
+  color: #6c757d;
+  margin: 0;
+  font-style: italic;
+}
+
 .no-data {
   text-align: center !important;
   color: #6c757d;
